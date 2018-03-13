@@ -21,6 +21,10 @@ public class MainActivity extends AppCompatActivity{
     Button susumu;
     Button modoru;
     Button saisei;
+    public int n=1;
+    public int oldn=1;
+    public int max=0; //画像の総数
+
 
 
 
@@ -70,35 +74,104 @@ public class MainActivity extends AppCompatActivity{
                 null // ソート (null ソートなし)
         );
 
+
+
+        if (cursor.moveToFirst()) {
+            do {
+                // indexからIDを取得し、そのIDから画像のURIを取得する
+                int fieldIndex = cursor.getColumnIndex(MediaStore.Images.Media._ID);
+                Long id = cursor.getLong(fieldIndex);
+                Uri imageUri = ContentUris.withAppendedId(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, id);
+
+                Log.d("ANDROID", "URI : " + imageUri.toString());
+                max+=1;
+                Log.d("ANDROID", "画像番号 " + Integer.toString(max));
+            } while (cursor.moveToNext());
+        }
+
+
+
         cursor.moveToFirst();
         int fieldIndex = cursor.getColumnIndex(MediaStore.Images.Media._ID);
         Long id = cursor.getLong(fieldIndex);
         Uri imageUri = ContentUris.withAppendedId(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, id);
 
-        int android = Log.d("ANDROID", "URI : " + imageUri.toString());
-
+        Log.d("ANDROID", "URI : " + imageUri.toString());
         ImageView imageVIew = (ImageView) findViewById(R.id.imageView);
         imageVIew.setImageURI(imageUri);
+
+
 
 
         susumu = (Button) findViewById(R.id.susumu);
         modoru = (Button) findViewById(R.id.modoru);
         saisei = (Button) findViewById(R.id.saisei);
 
+
         susumu.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                cursor.moveToNext();
-                int fieldIndex = cursor.getColumnIndex(MediaStore.Images.Media._ID);
-                Long id = cursor.getLong(fieldIndex);
-                Uri imageUri = ContentUris.withAppendedId(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, id);
+                if(n==max){
+                    n=1;
+                    cursor.moveToFirst();
+                    Log.d("ANDROID", "URI : " + imageUri.toString());
+                    imageVIew.setImageURI(imageUri);
 
-                ImageView imageVIew = (ImageView) findViewById(R.id.imageView);
-                imageVIew.setImageURI(imageUri);
+
+                }else{
+                    n +=1;
+                    cursor.moveToNext();
+                    Log.d("ANDROID", "URI : " + imageUri.toString());
+                    imageVIew.setImageURI(imageUri);
+
+                }
+                Log.d("ANDROID", "番号は" + Integer.toString(n));
+
             }
         });
+        modoru.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (n == 1) {
+                    n = max;
+                    cursor.moveToLast();
+                    Log.d("ANDROID", "URI : " + imageUri.toString());
+                    imageVIew.setImageURI(imageUri);
 
-        cursor.close();
+                } else {
+                    n -= 1;
+                    cursor.moveToPrevious();
+                    Log.d("ANDROID", "URI : " + imageUri.toString());
+                    imageVIew.setImageURI(imageUri);
+                }
+
+                Log.d("ANDROID", "番号は" + Integer.toString(n));
+            }
+        });
+/*
+        if (n == 1) {
+            cursor.moveToFirst();
+            Log.d("ANDROID", "URI : " + imageUri.toString());
+            imageVIew.setImageURI(imageUri);
+            oldn = n;
+
+        } else if (n == max) {
+            cursor.moveToLast();
+            Log.d("ANDROID", "URI : " + imageUri.toString());
+            imageVIew.setImageURI(imageUri);
+            oldn = n;
+
+        } else if (n >= oldn) {
+            cursor.moveToNext();
+            Log.d("ANDROID", "URI : " + imageUri.toString());
+            imageVIew.setImageURI(imageUri);
+            oldn = n;
+
+        } else if (n <= oldn) {
+            cursor.moveToPrevious();
+            Log.d("ANDROID", "URI : " + imageUri.toString());
+            imageVIew.setImageURI(imageUri);
+            oldn = n;
+        } */
     }
-
 }
