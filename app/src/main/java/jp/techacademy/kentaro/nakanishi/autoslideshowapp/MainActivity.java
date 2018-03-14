@@ -30,6 +30,7 @@ public class MainActivity extends AppCompatActivity{
     public int max=0; //画像の総数
     public boolean on = false; //自動再生ボタンのON/OFF
     public Cursor cursor;
+    Handler mHandler;
 
 
 
@@ -87,6 +88,7 @@ public class MainActivity extends AppCompatActivity{
                 null // ソート (null ソートなし)
         );
 
+        if (cursor.moveToFirst()) {
             do {
                 // indexからIDを取得し、そのIDから画像のURIを取得する
                 int fieldIndex = cursor.getColumnIndex(MediaStore.Images.Media._ID);
@@ -94,12 +96,10 @@ public class MainActivity extends AppCompatActivity{
                 Uri imageUri = ContentUris.withAppendedId(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, id);
 
                 Log.d("ANDROID", "URI : " + imageUri.toString());
-                max+=1;
+                max += 1;
                 Log.d("ANDROID", "画像番号 " + Integer.toString(max));
             } while (cursor.moveToNext());
-
-
-
+        }
 
         cursor.moveToFirst();
         int fieldIndex = cursor.getColumnIndex(MediaStore.Images.Media._ID);
@@ -111,24 +111,43 @@ public class MainActivity extends AppCompatActivity{
         imageVIew.setImageURI(imageUri);
 
 
-
-
         susumu = (Button) findViewById(R.id.susumu);
         modoru = (Button) findViewById(R.id.modoru);
         saisei = (Button) findViewById(R.id.saisei);
 
-        saisei.setOnClickListener(new View.OnClickListener(){
+        saisei.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View v){
-                if(on ==true) {
+            public void onClick(View v) {
+
+                if (on == true) {
                     on = false;
-                }else{
+                    modoru.setEnabled(true);
+                    susumu.setEnabled(true);
+
+                } else {
                     on = true;
+                    modoru.setEnabled(false);
+                    susumu.setEnabled(false);
                 }
-            }
+                mHandler = new Handler();
+                Timer timer= new Timer();
+                timer.schedule(new TimerTask() {
+                mHandler.post(new Runnable(){
+                        @Override
+                        public void run (){
+                            if (n == max) {
+                                n = 1;
+                            } else {
+                                n += 1;
+                            }
+                            Log.d("ANDROID", "番号は" + Integer.toString(n));
+
+                            show();
+                        }
+                    });
+                },2000,2000);
         });
 
-        if(on ==false) {
             susumu.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -138,46 +157,72 @@ public class MainActivity extends AppCompatActivity{
                         n += 1;
                     }
                     Log.d("ANDROID", "番号は" + Integer.toString(n));
+
+                    show();
                 }
             });
             modoru.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick (View v){
+                @Override
+                public void onClick(View v) {
                     if (n == 1) {
                         n = max;
                     } else {
                         n -= 1;
                     }
                     Log.d("ANDROID", "番号は" + Integer.toString(n));
+
+                    show();
                 }
             });
-        }
 
-        if(on == true){
+
+        if (on == true) {
 
         }
+    }
+    public void show(){
 
         if (n == 1) {
             cursor.moveToFirst();
+            int fieldIndex = cursor.getColumnIndex(MediaStore.Images.Media._ID);
+            Long id = cursor.getLong(fieldIndex);
+            Uri imageUri = ContentUris.withAppendedId(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, id);
+
             Log.d("ANDROID", "URI : " + imageUri.toString());
+            ImageView imageVIew = (ImageView) findViewById(R.id.imageView);
             imageVIew.setImageURI(imageUri);
             oldn = n;
 
         } else if (n == max) {
             cursor.moveToLast();
+            int fieldIndex = cursor.getColumnIndex(MediaStore.Images.Media._ID);
+            Long id = cursor.getLong(fieldIndex);
+            Uri imageUri = ContentUris.withAppendedId(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, id);
+
             Log.d("ANDROID", "URI : " + imageUri.toString());
+            ImageView imageVIew = (ImageView) findViewById(R.id.imageView);
             imageVIew.setImageURI(imageUri);
             oldn = n;
 
         } else if (n >= oldn) {
             cursor.moveToNext();
-            imageVIew.setImageURI(imageUri);
+            int fieldIndex = cursor.getColumnIndex(MediaStore.Images.Media._ID);
+            Long id = cursor.getLong(fieldIndex);
+            Uri imageUri = ContentUris.withAppendedId(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, id);
+
             Log.d("ANDROID", "URI : " + imageUri.toString());
+            ImageView imageVIew = (ImageView) findViewById(R.id.imageView);
+            imageVIew.setImageURI(imageUri);
             oldn = n;
 
         } else if (n <= oldn) {
             cursor.moveToPrevious();
+            int fieldIndex = cursor.getColumnIndex(MediaStore.Images.Media._ID);
+            Long id = cursor.getLong(fieldIndex);
+            Uri imageUri = ContentUris.withAppendedId(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, id);
+
             Log.d("ANDROID", "URI : " + imageUri.toString());
+            ImageView imageVIew = (ImageView) findViewById(R.id.imageView);
             imageVIew.setImageURI(imageUri);
             oldn = n;
         }
