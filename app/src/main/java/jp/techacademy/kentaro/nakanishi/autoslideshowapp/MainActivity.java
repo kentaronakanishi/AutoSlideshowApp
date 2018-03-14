@@ -113,20 +113,10 @@ public class MainActivity extends AppCompatActivity{
             public void onClick(View v) {
                 if(n==max){
                     n=1;
-                    cursor.moveToFirst();
-                    Log.d("ANDROID", "URI : " + imageUri.toString());
-                    imageVIew.setImageURI(imageUri);
-
-
                 }else{
                     n +=1;
-                    cursor.moveToNext();
-                    Log.d("ANDROID", "URI : " + imageUri.toString());
-                    imageVIew.setImageURI(imageUri);
-
                 }
                 Log.d("ANDROID", "番号は" + Integer.toString(n));
-
             }
         });
         modoru.setOnClickListener(new View.OnClickListener() {
@@ -134,21 +124,13 @@ public class MainActivity extends AppCompatActivity{
             public void onClick(View v) {
                 if (n == 1) {
                     n = max;
-                    cursor.moveToLast();
-                    Log.d("ANDROID", "URI : " + imageUri.toString());
-                    imageVIew.setImageURI(imageUri);
-
                 } else {
                     n -= 1;
-                    cursor.moveToPrevious();
-                    Log.d("ANDROID", "URI : " + imageUri.toString());
-                    imageVIew.setImageURI(imageUri);
                 }
-
                 Log.d("ANDROID", "番号は" + Integer.toString(n));
             }
         });
-/*
+
         if (n == 1) {
             cursor.moveToFirst();
             Log.d("ANDROID", "URI : " + imageUri.toString());
@@ -172,6 +154,6 @@ public class MainActivity extends AppCompatActivity{
             Log.d("ANDROID", "URI : " + imageUri.toString());
             imageVIew.setImageURI(imageUri);
             oldn = n;
-        } */
+        }
     }
 }
