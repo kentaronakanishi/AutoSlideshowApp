@@ -123,16 +123,15 @@ public class MainActivity extends AppCompatActivity{
                 if(on ==true) {
                     on = false;
                 }else{
-                    on = true
+                    on = true;
                 }
             }
         });
 
-        susumu.setOnClickListener(new View.OnClickListener(){
-
-            if(on ==false){
+        if(on ==false) {
+            susumu.setOnClickListener(new View.OnClickListener() {
                 @Override
-                public void onClick (View v){
+                public void onClick(View v) {
                     if (n == max) {
                         n = 1;
                     } else {
@@ -140,12 +139,10 @@ public class MainActivity extends AppCompatActivity{
                     }
                     Log.d("ANDROID", "番号は" + Integer.toString(n));
                 }
-            }
-        });
-        modoru.setOnClickListener(new View.OnClickListener() {
-            if(on ==false){
-                @Override
-                public void onClick(View v) {
+            });
+            modoru.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick (View v){
                     if (n == 1) {
                         n = max;
                     } else {
@@ -153,8 +150,8 @@ public class MainActivity extends AppCompatActivity{
                     }
                     Log.d("ANDROID", "番号は" + Integer.toString(n));
                 }
-            }
-        });
+            });
+        }
 
         if(on == true){
 
