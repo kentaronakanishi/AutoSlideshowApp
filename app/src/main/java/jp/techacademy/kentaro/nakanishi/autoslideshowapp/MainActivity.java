@@ -8,12 +8,16 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.provider.MediaStore;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
+
+import java.util.Timer;
+import java.util.TimerTask;
 
 public class MainActivity extends AppCompatActivity{
 
@@ -24,6 +28,9 @@ public class MainActivity extends AppCompatActivity{
     public int n=1;
     public int oldn=1;
     public int max=0; //画像の総数
+    public boolean on = false; //自動再生ボタンのON/OFF
+    public Cursor cursor;
+
 
 
 
@@ -32,6 +39,8 @@ public class MainActivity extends AppCompatActivity{
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+//パーミッション確認
 
         // Android 6.0以降の場合
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
@@ -48,7 +57,7 @@ public class MainActivity extends AppCompatActivity{
             getContentsInfo();
         }
     }
-
+//パーミッション要請
     @Override
     public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
         switch (requestCode) {
@@ -62,11 +71,15 @@ public class MainActivity extends AppCompatActivity{
         }
     }
 
+    Timer mTimer;   //タイマー
+    int mTimerS;    //タイマー用の変数
+    Handler mHandler = new Handler();   //なにこれ？
+
     private void getContentsInfo() {
 
         // 画像の情報を取得する
         ContentResolver resolver = getContentResolver();
-        final Cursor cursor = resolver.query(
+        cursor = resolver.query(
                 MediaStore.Images.Media.EXTERNAL_CONTENT_URI, // データの種類
                 null, // 項目(null = 全項目)
                 null, // フィルタ条件(null = フィルタなし)
@@ -74,9 +87,6 @@ public class MainActivity extends AppCompatActivity{
                 null // ソート (null ソートなし)
         );
 
-
-
-        if (cursor.moveToFirst()) {
             do {
                 // indexからIDを取得し、そのIDから画像のURIを取得する
                 int fieldIndex = cursor.getColumnIndex(MediaStore.Images.Media._ID);
@@ -87,7 +97,7 @@ public class MainActivity extends AppCompatActivity{
                 max+=1;
                 Log.d("ANDROID", "画像番号 " + Integer.toString(max));
             } while (cursor.moveToNext());
-        }
+
 
 
 
@@ -107,29 +117,48 @@ public class MainActivity extends AppCompatActivity{
         modoru = (Button) findViewById(R.id.modoru);
         saisei = (Button) findViewById(R.id.saisei);
 
-
-        susumu.setOnClickListener(new View.OnClickListener() {
+        saisei.setOnClickListener(new View.OnClickListener(){
             @Override
-            public void onClick(View v) {
-                if(n==max){
-                    n=1;
+            public void onClick(View v){
+                if(on ==true) {
+                    on = false;
                 }else{
-                    n +=1;
+                    on = true
                 }
-                Log.d("ANDROID", "番号は" + Integer.toString(n));
+            }
+        });
+
+        susumu.setOnClickListener(new View.OnClickListener(){
+
+            if(on ==false){
+                @Override
+                public void onClick (View v){
+                    if (n == max) {
+                        n = 1;
+                    } else {
+                        n += 1;
+                    }
+                    Log.d("ANDROID", "番号は" + Integer.toString(n));
+                }
             }
         });
         modoru.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (n == 1) {
-                    n = max;
-                } else {
-                    n -= 1;
+            if(on ==false){
+                @Override
+                public void onClick(View v) {
+                    if (n == 1) {
+                        n = max;
+                    } else {
+                        n -= 1;
+                    }
+                    Log.d("ANDROID", "番号は" + Integer.toString(n));
                 }
-                Log.d("ANDROID", "番号は" + Integer.toString(n));
             }
         });
+
+        if(on == true){
+
+        }
 
         if (n == 1) {
             cursor.moveToFirst();
@@ -145,8 +174,8 @@ public class MainActivity extends AppCompatActivity{
 
         } else if (n >= oldn) {
             cursor.moveToNext();
-            Log.d("ANDROID", "URI : " + imageUri.toString());
             imageVIew.setImageURI(imageUri);
+            Log.d("ANDROID", "URI : " + imageUri.toString());
             oldn = n;
 
         } else if (n <= oldn) {
