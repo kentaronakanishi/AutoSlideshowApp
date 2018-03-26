@@ -1,5 +1,4 @@
 package jp.techacademy.kentaro.nakanishi.autoslideshowapp;
-
 import android.Manifest;
 import android.content.ContentResolver;
 import android.content.ContentUris;
@@ -15,12 +14,9 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
-
 import java.util.Timer;
 import java.util.TimerTask;
-
 public class MainActivity extends AppCompatActivity{
-
     private static final int PERMISSIONS_REQUEST_CODE = 100;
     Button susumu;
     Button modoru;
@@ -30,19 +26,12 @@ public class MainActivity extends AppCompatActivity{
     public int max=0; //画像の総数
     public boolean on = false; //自動再生ボタンのON/OFF
     public Cursor cursor;
-    Handler mHandler;
-
-
-
-
-
+    Handler mHandler = new Handler(); // ここで一度だけインスタンス化します。
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
 //パーミッション確認
-
         // Android 6.0以降の場合
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             // パーミッションの許可状態を確認する
@@ -58,7 +47,7 @@ public class MainActivity extends AppCompatActivity{
             getContentsInfo();
         }
     }
-//パーミッション要請
+    //パーミッション要請
     @Override
     public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
         switch (requestCode) {
@@ -71,13 +60,9 @@ public class MainActivity extends AppCompatActivity{
                 break;
         }
     }
-
     Timer mTimer;   //タイマー
     int mTimerS;    //タイマー用の変数
-    Handler mHandler = new Handler();   //なにこれ？
-
     private void getContentsInfo() {
-
         // 画像の情報を取得する
         ContentResolver resolver = getContentResolver();
         cursor = resolver.query(
@@ -87,144 +72,137 @@ public class MainActivity extends AppCompatActivity{
                 null, // フィルタ用パラメータ
                 null // ソート (null ソートなし)
         );
-
         if (cursor.moveToFirst()) {
             do {
                 // indexからIDを取得し、そのIDから画像のURIを取得する
                 int fieldIndex = cursor.getColumnIndex(MediaStore.Images.Media._ID);
                 Long id = cursor.getLong(fieldIndex);
                 Uri imageUri = ContentUris.withAppendedId(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, id);
-
                 Log.d("ANDROID", "URI : " + imageUri.toString());
                 max += 1;
                 Log.d("ANDROID", "画像番号 " + Integer.toString(max));
             } while (cursor.moveToNext());
         }
-
         cursor.moveToFirst();
         int fieldIndex = cursor.getColumnIndex(MediaStore.Images.Media._ID);
         Long id = cursor.getLong(fieldIndex);
         Uri imageUri = ContentUris.withAppendedId(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, id);
-
         Log.d("ANDROID", "URI : " + imageUri.toString());
         ImageView imageVIew = (ImageView) findViewById(R.id.imageView);
         imageVIew.setImageURI(imageUri);
-
-
         susumu = (Button) findViewById(R.id.susumu);
         modoru = (Button) findViewById(R.id.modoru);
         saisei = (Button) findViewById(R.id.saisei);
+        final Runnable runnable = new Runnable(){
+            @Override
+            public void run (){
+                if (n == max) {
+                    n = 1;
+                } else {
+                    n += 1;
+                }
+                Log.d("ANDROID", "番号は" + Integer.toString(n));
+                show();
+            }
+        };
 
         saisei.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
                 if (on == true) {
                     on = false;
                     modoru.setEnabled(true);
                     susumu.setEnabled(true);
-
                 } else {
                     on = true;
                     modoru.setEnabled(false);
                     susumu.setEnabled(false);
                 }
-                mHandler = new Handler();
-                Timer timer= new Timer();
-                timer.schedule(new TimerTask() {
-                mHandler.post(new Runnable(){
-                        @Override
-                        public void run (){
-                            if (n == max) {
-                                n = 1;
-                            } else {
-                                n += 1;
-                            }
-                            Log.d("ANDROID", "番号は" + Integer.toString(n));
-
-                            show();
-                        }
-                    });
-                },2000,2000);
+                final TimerTask task = new TimerTask() {
+                    @Override
+                    public void run() {
+                        mHandler.post(runnable);
+                    }
+                };
+                Timer timer = new Timer();
+                timer.schedule(task, 2000, 2000);
+            }
         });
-
-            susumu.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    if (n == max) {
-                        n = 1;
-                    } else {
-                        n += 1;
-                    }
-                    Log.d("ANDROID", "番号は" + Integer.toString(n));
-
-                    show();
-                }
-            });
-            modoru.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    if (n == 1) {
-                        n = max;
-                    } else {
-                        n -= 1;
-                    }
-                    Log.d("ANDROID", "番号は" + Integer.toString(n));
-
-                    show();
-                }
-            });
-
-
-        if (on == true) {
-
-        }
+        susumu.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                processButton();
+            }
+        });
+        modoru.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v) {
+                backButton();
+            }
+        });
     }
-    public void show(){
 
+    //nの増減によって画像を表示する関数
+    public void show(){
         if (n == 1) {
             cursor.moveToFirst();
             int fieldIndex = cursor.getColumnIndex(MediaStore.Images.Media._ID);
             Long id = cursor.getLong(fieldIndex);
             Uri imageUri = ContentUris.withAppendedId(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, id);
-
             Log.d("ANDROID", "URI : " + imageUri.toString());
             ImageView imageVIew = (ImageView) findViewById(R.id.imageView);
             imageVIew.setImageURI(imageUri);
             oldn = n;
-
         } else if (n == max) {
             cursor.moveToLast();
             int fieldIndex = cursor.getColumnIndex(MediaStore.Images.Media._ID);
             Long id = cursor.getLong(fieldIndex);
             Uri imageUri = ContentUris.withAppendedId(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, id);
-
             Log.d("ANDROID", "URI : " + imageUri.toString());
             ImageView imageVIew = (ImageView) findViewById(R.id.imageView);
             imageVIew.setImageURI(imageUri);
             oldn = n;
-
         } else if (n >= oldn) {
             cursor.moveToNext();
             int fieldIndex = cursor.getColumnIndex(MediaStore.Images.Media._ID);
             Long id = cursor.getLong(fieldIndex);
             Uri imageUri = ContentUris.withAppendedId(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, id);
-
             Log.d("ANDROID", "URI : " + imageUri.toString());
             ImageView imageVIew = (ImageView) findViewById(R.id.imageView);
             imageVIew.setImageURI(imageUri);
             oldn = n;
-
         } else if (n <= oldn) {
             cursor.moveToPrevious();
             int fieldIndex = cursor.getColumnIndex(MediaStore.Images.Media._ID);
             Long id = cursor.getLong(fieldIndex);
             Uri imageUri = ContentUris.withAppendedId(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, id);
-
             Log.d("ANDROID", "URI : " + imageUri.toString());
             ImageView imageVIew = (ImageView) findViewById(R.id.imageView);
             imageVIew.setImageURI(imageUri);
             oldn = n;
         }
+    }
+    /**
+     * 同じような処理を何度も書くとメンテナンス性が悪いので一か所にまとめました。
+     */
+    //nを進めるボタン
+    private void processButton() {
+        if (n == max) {
+            n = 1;
+        } else {
+            n += 1;
+        }
+        Log.d("ANDROID", "番号は" + Integer.toString(n));
+        show();
+    }
+
+    private void backButton() {
+        if (n == 1) {
+            n = max;
+        } else {
+            n -= 1;
+        }
+        Log.d("ANDROID", "番号は" + Integer.toString(n));
+        show();
     }
 }
