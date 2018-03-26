@@ -27,6 +27,9 @@ public class MainActivity extends AppCompatActivity{
     public boolean on = false; //自動再生ボタンのON/OFF
     public Cursor cursor;
     Handler mHandler = new Handler(); // ここで一度だけインスタンス化します。
+
+    Timer timer =null;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -109,23 +112,32 @@ public class MainActivity extends AppCompatActivity{
         saisei.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+
+
                 if (on == true) {
                     on = false;
                     modoru.setEnabled(true);
                     susumu.setEnabled(true);
+                    if(timer!=null) {
+                        timer.cancel();
+                    }else{
+                        timer=null;
+                    }
+
                 } else {
                     on = true;
                     modoru.setEnabled(false);
                     susumu.setEnabled(false);
+                    timer = new Timer();
+
+                    final TimerTask task = new TimerTask() {
+                        @Override
+                        public void run() {
+                            mHandler.post(runnable);
+                        }
+                    };
+                    timer.schedule(task, 2000, 2000);
                 }
-                final TimerTask task = new TimerTask() {
-                    @Override
-                    public void run() {
-                        mHandler.post(runnable);
-                    }
-                };
-                Timer timer = new Timer();
-                timer.schedule(task, 2000, 2000);
             }
         });
         susumu.setOnClickListener(new View.OnClickListener() {
